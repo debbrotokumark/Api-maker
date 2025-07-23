@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL to PHP Code Generator</title>
+  <style>
+    /* ... your existing CSS unchanged ... */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+  body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #4b6cb7, #182848);
+      display: flex;
+      justify-content: center;
+      padding: 50px 20px;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    form {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      max-width: 700px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #222;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      background: #f9f9f9;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-top: 20px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+   
+    .outputDivDesign {
+      background: #ffffffee;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      height: 900px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  
+    }
+    .outputDivDesign h2 {
+      margin-bottom: 15px;
+      color: #222;
+    }
+   
+    pre {
+      background-color: #2d2d2d;
+      color: #f1f1f1;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      max-height: 750px;
+      min-height: 750px;
+      overflow: auto;
+    }
+
+    .copy-btn {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background-color 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background-color: #218838;
+    }
+ 
+
+    @media (max-width: 768px) {
+      body {
+        padding: 20px;
+      }
+
+      form,
+      .outputDivDesign {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div style="width: 100%; max-width: 750px">
+    <form id="sqlForm">
+      <h1>SQL to PHP Code Generator</h1>
+      <label for="key">Key Value:</label>
+      <input type="text" id="key" placeholder="Enter API key" required />
+
+      <label for="columns">SQL CREATE TABLE Statement:</label>
+      <textarea id="columns" placeholder="Enter SQL CREATE TABLE statement" required></textarea>
+
+      <button type="submit">Generate PHP Code</button>
+    </form>
+
+    <div class="output-container">
+
+    <div id="insertCodeDiv" class="outputDivDesign" style="display: none">
+      <h2>Insert Code</h2>
+      <pre id="insertCodeOutput"></pre>
+      <button class="copy-btn" id="copyInsertcode">Copy Insert Code</button>
+    </div>
+
+    <div id="getListCodeDiv" class="outputDivDesign" style="display: none">
+      <h2>All List Get</h2>
+      <pre id="getListCodeOutput"></pre>
+      <button class="copy-btn" id="copyGetListcode">Copy All List Get</button>
+    </div>
+
+    <div id="updateCodeDiv" class="outputDivDesign" style="display: none">
+      <h2>Update Code</h2>
+      <pre id="updateCodeOutput"></pre>
+      <button class="copy-btn" id="copyUpdatecode">Copy Update Code</button>
+    </div>
+
+    <div id="deleteCodeDiv" class="outputDivDesign" style="display: none">
+      <h2>Delete Code</h2>
+      <pre id="deleteCodeOutput"></pre>
+      <button class="copy-btn" id="copyDeletecode">Copy Delete Code</button>
+    </div>
+    </div>
+  
+
+  </div>
+<script>
+  document
+    .getElementById("sqlForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const sqlInput = document.getElementById("columns").value.trim();
+      const key = document.getElementById("key").value.trim();
+
+      // Regular expression to extract table name and columns
+      const tableRegex = /CREATE TABLE (\w+)\s*\(([\s\S]+)\)/i;
+      const match = tableRegex.exec(sqlInput);
+
+      if (match) {
+        const tableName = match[1]; // Extracted table name
+        const extractedColumns = match[2]
+          .split(",")
+          .map((col) => col.trim())
+          .filter(
+            (col) =>
+              col &&
+              !col.toUpperCase().startsWith("PRIMARY KEY") &&
+              !col.toUpperCase().startsWith("UNIQUE") &&
+              !col.toUpperCase().startsWith("KEY") &&
+              !col.toUpperCase().startsWith("CONSTRAINT")
+          );
+
+        // Join the columns for SELECT query
+        const columnsForSelect = extractedColumns
+          .map((col) => col.split(/\s+/)[0]) // Extract column names
+          .join(", ");
+
+        const phpgetListCode = `<?php
+
+$key = $_POST['key'];
+
+if ($key == "${key}") {
+    require '../connection.php';
+
+    // SQL query to fetch all rows
+    \$fetchall = "SELECT ${columnsForSelect} FROM ${tableName}";
+    \$result = mysqli_query(\$conn, \$fetchall);
+
+    \$response = [
+        'errorCode' => '000',  
+        'data' => [] // Initialize as an empty array
+    ];
+
+    if (\$result && mysqli_num_rows(\$result) > 0) {
+        while (\$row = mysqli_fetch_assoc(\$result)) {
+            \$response['data'][] = \$row; // Append each row to the data array
+        }
+    } else {
+        \$response['errorCode'] = '400'; // No data found
+    }
+} else {
+    \$response = [
+        'errorCode' => '401', // Unauthorized access
+        'data' => null,
+    ];
+}
+
+// Set the content type to JSON and output the response
+header('Content-Type: application/json');
+echo json_encode(\$response);
+?>`;
+
+        const columns = columnsForSelect
+          .split(",")
+          .map((col) => col.trim())
+          .filter((col) => col !== "id");
+        const table = tableName;
+
+        const phpinsetCode = `<?php
+
+\$key = \$_POST['key'];
+
+if (\$key == "${key}") {
+    require '../connection.php';
+
+    // Retrieve data from POST request
+    ${columns.map((col) => `$${col} = $_POST['${col}'] ?? '';`).join("\n    ")}
+
+    \$response = [
+        'errorCode' => '000',  // Default success code
+        'message' => ''
+    ];
+
+    // Check if any field is empty
+    if (${columns.map((col) => `empty($${col})`).join(" || ")}) {
+        \$response['errorCode'] = '001';
+        \$response['message'] = 'All fields are required.';
+    } else {
+        // SQL query to insert data
+        \$query = "INSERT INTO ${table} (${columns.join(", ")}) VALUES (${columns
+          .map(() => "?")
+          .join(", ")})";
+        \$stmt = mysqli_prepare(\$conn, \$query);
+        mysqli_stmt_bind_param(\$stmt, "${"s".repeat(columns.length)}", ${columns
+          .map((col) => `$${col}`)
+          .join(", ")});
+
+        // Execute the query
+        if (mysqli_stmt_execute(\$stmt)) {
+            \$response['message'] = 'Data inserted successfully.';
+        } else {
+            \$response['errorCode'] = '002';
+            \$response['message'] = 'Failed to insert data.';
+        }
+
+        mysqli_stmt_close(\$stmt);
+    }
+
+    mysqli_close(\$conn);
+} else {
+    \$response = [
+        'errorCode' => '401', // Unauthorized access
+        'message' => 'Unauthorized access.',
+    ];
+}
+
+// Set the content type to JSON and output the response
+header('Content-Type: application/json');
+echo json_encode(\$response);
+
+?>`;
+
+const phpUpdateCode = `<?php
+
+\$key = \$_POST['key'];
+
+if (\$key == "${key}") {
+    require '../connection.php';
+
+    // Retrieve data from POST request
+    \$id = \$_POST['id'] ?? '';
+    ${columns.map((col) => `$${col} = $_POST['${col}'] ?? '';`).join("\n    ")}
+
+    \$response = [
+        'errorCode' => '000',  // Default success code
+        'message' => ''
+    ];
+
+    // Check if any field is empty
+    if (empty(\$id) || ${columns.map((col) => `empty($${col})`).join(" || ")}) {
+        \$response['errorCode'] = '001';
+        \$response['message'] = 'All fields are required.';
+    } else {
+        // SQL query to update data
+        \$query = "UPDATE ${table} SET ${columns.map((col) => `${col} = ?`).join(", ")} WHERE id = ?";
+        \$stmt = mysqli_prepare(\$conn, \$query);
+        mysqli_stmt_bind_param(\$stmt, "${"s".repeat(columns.length)}i", ${columns.map((col) => `$${col}`).join(", ")}, \$id);
+
+        // Execute the query
+        if (mysqli_stmt_execute(\$stmt)) {
+            if (mysqli_stmt_affected_rows(\$stmt) > 0) {
+                \$response['message'] = 'Data updated successfully.';
+            } else {
+                \$response['errorCode'] = '003';
+                \$response['message'] = 'No rows updated. Check if the ID exists.';
+            }
+        } else {
+            \$response['errorCode'] = '002';
+            \$response['message'] = 'Failed to update data.';
+        }
+
+        mysqli_stmt_close(\$stmt);
+    }
+
+    mysqli_close(\$conn);
+} else {
+    \$response = [
+        'errorCode' => '401', // Unauthorized access
+        'message' => 'Unauthorized access.',
+    ];
+}
+
+// Set the content type to JSON and output the response
+header('Content-Type: application/json');
+echo json_encode(\$response);
+
+?>`;
+
+
+ const phpdeleteCode=`<?php
+
+$key = $_POST['key'];
+
+if ($key === "${key}") {
+    require '../connection.php';
+
+    // Get the ID from POST
+    $id = $_POST['id'] ?? '';
+
+    $response = [
+        'errorCode' => '000',
+        'message' => ''
+    ];
+
+    // Validate ID
+    if (empty($id)) {
+        $response['errorCode'] = '001';
+        $response['message'] = 'ID is required.';
+    } else {
+        // Prepare delete query
+        $query = "DELETE FROM ${table} WHERE id = ?";
+        $stmt = mysqli_prepare($conn, $query);
+        mysqli_stmt_bind_param($stmt, "i", $id);
+
+        if (mysqli_stmt_execute($stmt)) {
+            if (mysqli_stmt_affected_rows($stmt) > 0) {
+                $response['message'] = 'Data deleted successfully.';
+            } else {
+                $response['errorCode'] = '003';
+                $response['message'] = 'No data found with this ID.';
+            }
+        } else {
+            $response['errorCode'] = '002';
+            $response['message'] = 'Failed to delete data.';
+        }
+
+        mysqli_stmt_close($stmt);
+    }
+
+    mysqli_close($conn);
+} else {
+    $response = [
+        'errorCode' => '401',
+        'message' => 'Unauthorized access.',
+    ];
+}
+
+header('Content-Type: application/json');
+echo json_encode($response);
+
+?>
+`; 
+
+        // Show the "All List Get" output div and fill its pre tag
+        const getListCodeDiv = document.getElementById("getListCodeDiv");
+        const getListCodeOutput = document.getElementById("getListCodeOutput");
+
+        getListCodeOutput.textContent = phpgetListCode;
+        getListCodeDiv.style.display = "block";
+
+        const insertCodeDiv = document.getElementById("insertCodeDiv");
+        const insertCodeOutput = document.getElementById("insertCodeOutput");
+
+        insertCodeOutput.textContent = phpinsetCode;
+        insertCodeDiv.style.display = "block";
+
+        const deleteCodeDiv = document.getElementById("deleteCodeDiv");
+        const deleteCodeOutput = document.getElementById("deleteCodeOutput");
+
+        deleteCodeOutput.textContent = phpdeleteCode;
+        deleteCodeDiv.style.display = "block";
+
+          const updateCodeDiv = document.getElementById("updateCodeDiv");
+        const updateCodeOutput = document.getElementById("updateCodeOutput");
+
+        updateCodeOutput.textContent = phpUpdateCode;
+        updateCodeDiv.style.display = "block";
+
+
+        // Hide other output divs (optional)
+      } else {
+        alert("Invalid SQL CREATE TABLE syntax. Please try again.");
+      }
+    });
+
+  // Copy buttons handlers
+  document
+    .getElementById("copyGetListcode")
+    .addEventListener("click", function () {
+      const code = document.getElementById("getListCodeOutput").textContent;
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          alert("PHP code copied to clipboard!");
+        })
+        .catch((err) => {
+          alert("Failed to copy text: " + err);
+        });
+    });
+
+  document
+    .getElementById("copyInsertcode")
+    .addEventListener("click", function () {
+      const code = document.getElementById("insertCodeOutput").textContent;
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          alert("PHP code copied to clipboard!");
+        })
+        .catch((err) => {
+          alert("Failed to copy text: " + err);
+        });
+    });
+
+    
+  document
+    .getElementById("copyDeletecode")
+    .addEventListener("click", function () {
+      const code = document.getElementById("deleteCodeOutput").textContent;
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          alert("PHP code copied to clipboard!");
+        })
+        .catch((err) => {
+          alert("Failed to copy text: " + err);
+        });
+    });
+
+      document
+    .getElementById("copyUpdatecode")
+    .addEventListener("click", function () {
+      const code = document.getElementById("updateCodeOutput").textContent;
+      navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          alert("PHP code copied to clipboard!");
+        })
+        .catch((err) => {
+          alert("Failed to copy text: " + err);
+        });
+    });
+
+</script>
+
+</body>
+
+</html>
