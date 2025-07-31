@@ -13,7 +13,7 @@
       padding: 0;
     }
 
-  body {
+    body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(120deg, #4b6cb7, #182848);
       display: flex;
@@ -78,7 +78,7 @@
     button:hover {
       background-color: #0056b3;
     }
-   
+
     .outputDivDesign {
       background: #ffffffee;
       border: 1px solid #ddd;
@@ -87,13 +87,14 @@
       margin-bottom: 30px;
       height: 900px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  
+
     }
+
     .outputDivDesign h2 {
       margin-bottom: 15px;
       color: #222;
     }
-   
+
     pre {
       background-color: #2d2d2d;
       color: #f1f1f1;
@@ -120,7 +121,25 @@
     .copy-btn:hover {
       background-color: #218838;
     }
- 
+
+    .div-flex {
+      display: flex;
+      justify-content: space-between;
+      padding: 0;
+      margin: 0;
+      height: 40px;
+    }
+
+
+    .div-flex h5 {
+      margin-top: 15px;
+      font-size: 17px;
+      color: #0051ff;
+    }
+
+    .div-flex h5:hover {
+      cursor: pointer;
+    }
 
     @media (max-width: 768px) {
       body {
@@ -139,7 +158,11 @@
   <div style="width: 100%; max-width: 750px">
     <form id="sqlForm">
       <h1>SQL to PHP Code Generator</h1>
-      <label for="key">Key Value:</label>
+      <div class="div-flex">
+        <label class="width-half" for="key">Key Value:</label>
+        <h5 id="dowenloadconnectionfile" class="width-half">Download Connection.php ⬇️</h5>
+      </div>
+
       <input type="text" id="key" placeholder="Enter API key" required />
 
       <label for="columns">SQL CREATE TABLE Statement:</label>
@@ -150,66 +173,66 @@
 
     <div class="output-container">
 
-    <div id="insertCodeDiv" class="outputDivDesign" style="display: none">
-      <h2>Insert Code</h2>
-      <pre id="insertCodeOutput"></pre>
-      <button class="copy-btn" id="copyInsertcode">Copy Insert Code</button>
+      <div id="insertCodeDiv" class="outputDivDesign" style="display: none">
+        <h2>Insert Code</h2>
+        <pre id="insertCodeOutput"></pre>
+        <button class="copy-btn" id="copyInsertcode">Copy Insert Code</button>
+      </div>
+
+      <div id="getListCodeDiv" class="outputDivDesign" style="display: none">
+        <h2>All List Get</h2>
+        <pre id="getListCodeOutput"></pre>
+        <button class="copy-btn" id="copyGetListcode">Copy All List Get</button>
+      </div>
+
+      <div id="updateCodeDiv" class="outputDivDesign" style="display: none">
+        <h2>Update Code</h2>
+        <pre id="updateCodeOutput"></pre>
+        <button class="copy-btn" id="copyUpdatecode">Copy Update Code</button>
+      </div>
+
+      <div id="deleteCodeDiv" class="outputDivDesign" style="display: none">
+        <h2>Delete Code</h2>
+        <pre id="deleteCodeOutput"></pre>
+        <button class="copy-btn" id="copyDeletecode">Copy Delete Code</button>
+      </div>
     </div>
 
-    <div id="getListCodeDiv" class="outputDivDesign" style="display: none">
-      <h2>All List Get</h2>
-      <pre id="getListCodeOutput"></pre>
-      <button class="copy-btn" id="copyGetListcode">Copy All List Get</button>
-    </div>
-
-    <div id="updateCodeDiv" class="outputDivDesign" style="display: none">
-      <h2>Update Code</h2>
-      <pre id="updateCodeOutput"></pre>
-      <button class="copy-btn" id="copyUpdatecode">Copy Update Code</button>
-    </div>
-
-    <div id="deleteCodeDiv" class="outputDivDesign" style="display: none">
-      <h2>Delete Code</h2>
-      <pre id="deleteCodeOutput"></pre>
-      <button class="copy-btn" id="copyDeletecode">Copy Delete Code</button>
-    </div>
-    </div>
-  
 
   </div>
-<script>
-  document
-    .getElementById("sqlForm")
-    .addEventListener("submit", function (e) {
-      e.preventDefault();
+  <script>
+    document
+      .getElementById("sqlForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
 
-      const sqlInput = document.getElementById("columns").value.trim();
-      const key = document.getElementById("key").value.trim();
+        const sqlInput = document.getElementById("columns").value.trim();
+        const key = document.getElementById("key").value.trim();
 
-      // Regular expression to extract table name and columns
-      const tableRegex = /CREATE TABLE (\w+)\s*\(([\s\S]+)\)/i;
-      const match = tableRegex.exec(sqlInput);
+        // Regular expression to extract table name and columns
+        const tableRegex = /CREATE TABLE (\w+)\s*\(([\s\S]+)\)/i;
+        const match = tableRegex.exec(sqlInput);
 
-      if (match) {
-        const tableName = match[1]; // Extracted table name
-        const extractedColumns = match[2]
-          .split(",")
-          .map((col) => col.trim())
-          .filter(
-            (col) =>
-              col &&
-              !col.toUpperCase().startsWith("PRIMARY KEY") &&
-              !col.toUpperCase().startsWith("UNIQUE") &&
-              !col.toUpperCase().startsWith("KEY") &&
-              !col.toUpperCase().startsWith("CONSTRAINT")
-          );
+        if (match) {
+          const tableName = match[1]; // Extracted table name
+          const extractedColumns = match[2]
+            .split(",")
+            .map((col) => col.trim())
+            .filter(
+              (col) =>
+                col &&
+                !col.toUpperCase().startsWith("PRIMARY KEY") &&
+                !col.toUpperCase().startsWith("UNIQUE") &&
+                !col.toUpperCase().startsWith("KEY") &&
+                !col.toUpperCase().startsWith("CONSTRAINT")
+            );
 
-        // Join the columns for SELECT query
-        const columnsForSelect = extractedColumns
-          .map((col) => col.split(/\s+/)[0]) // Extract column names
-          .join(", ");
+          // Join the columns for SELECT query
+          const columnsForSelect = extractedColumns
+            .map((col) => col.split(/\s+/)[0]) // Extract column names
+            .join(", ");
 
-        const phpgetListCode = `<?php
+          const phpgetListCode = `<?php
 
 $key = $_POST['key'];
 
@@ -244,13 +267,13 @@ header('Content-Type: application/json');
 echo json_encode(\$response);
 ?>`;
 
-        const columns = columnsForSelect
-          .split(",")
-          .map((col) => col.trim())
-          .filter((col) => col !== "id");
-        const table = tableName;
+          const columns = columnsForSelect
+            .split(",")
+            .map((col) => col.trim())
+            .filter((col) => col !== "id");
+          const table = tableName;
 
-        const phpinsetCode = `<?php
+          const phpinsetCode = `<?php
 
 \$key = \$_POST['key'];
 
@@ -272,12 +295,12 @@ if (\$key == "${key}") {
     } else {
         // SQL query to insert data
         \$query = "INSERT INTO ${table} (${columns.join(", ")}) VALUES (${columns
-          .map(() => "?")
-          .join(", ")})";
+              .map(() => "?")
+              .join(", ")})";
         \$stmt = mysqli_prepare(\$conn, \$query);
         mysqli_stmt_bind_param(\$stmt, "${"s".repeat(columns.length)}", ${columns
-          .map((col) => `$${col}`)
-          .join(", ")});
+              .map((col) => `$${col}`)
+              .join(", ")});
 
         // Execute the query
         if (mysqli_stmt_execute(\$stmt)) {
@@ -304,7 +327,7 @@ echo json_encode(\$response);
 
 ?>`;
 
-const phpUpdateCode = `<?php
+          const phpUpdateCode = `<?php
 
 \$key = \$_POST['key'];
 
@@ -361,7 +384,7 @@ echo json_encode(\$response);
 ?>`;
 
 
- const phpdeleteCode=`<?php
+          const phpdeleteCode = `<?php
 
 $key = $_POST['key'];
 
@@ -413,99 +436,124 @@ header('Content-Type: application/json');
 echo json_encode($response);
 
 ?>
-`; 
+`;
 
-        // Show the "All List Get" output div and fill its pre tag
-        const getListCodeDiv = document.getElementById("getListCodeDiv");
-        const getListCodeOutput = document.getElementById("getListCodeOutput");
+          // Show the "All List Get" output div and fill its pre tag
+          const getListCodeDiv = document.getElementById("getListCodeDiv");
+          const getListCodeOutput = document.getElementById("getListCodeOutput");
 
-        getListCodeOutput.textContent = phpgetListCode;
-        getListCodeDiv.style.display = "block";
+          getListCodeOutput.textContent = phpgetListCode;
+          getListCodeDiv.style.display = "block";
 
-        const insertCodeDiv = document.getElementById("insertCodeDiv");
-        const insertCodeOutput = document.getElementById("insertCodeOutput");
+          const insertCodeDiv = document.getElementById("insertCodeDiv");
+          const insertCodeOutput = document.getElementById("insertCodeOutput");
 
-        insertCodeOutput.textContent = phpinsetCode;
-        insertCodeDiv.style.display = "block";
+          insertCodeOutput.textContent = phpinsetCode;
+          insertCodeDiv.style.display = "block";
 
-        const deleteCodeDiv = document.getElementById("deleteCodeDiv");
-        const deleteCodeOutput = document.getElementById("deleteCodeOutput");
+          const deleteCodeDiv = document.getElementById("deleteCodeDiv");
+          const deleteCodeOutput = document.getElementById("deleteCodeOutput");
 
-        deleteCodeOutput.textContent = phpdeleteCode;
-        deleteCodeDiv.style.display = "block";
+          deleteCodeOutput.textContent = phpdeleteCode;
+          deleteCodeDiv.style.display = "block";
 
           const updateCodeDiv = document.getElementById("updateCodeDiv");
-        const updateCodeOutput = document.getElementById("updateCodeOutput");
+          const updateCodeOutput = document.getElementById("updateCodeOutput");
 
-        updateCodeOutput.textContent = phpUpdateCode;
-        updateCodeDiv.style.display = "block";
+          updateCodeOutput.textContent = phpUpdateCode;
+          updateCodeDiv.style.display = "block";
 
 
-        // Hide other output divs (optional)
-      } else {
-        alert("Invalid SQL CREATE TABLE syntax. Please try again.");
-      }
+          // Hide other output divs (optional)
+        } else {
+          alert("Invalid SQL CREATE TABLE syntax. Please try again.");
+        }
+      });
+
+    // Copy buttons handlers
+    document
+      .getElementById("copyGetListcode")
+      .addEventListener("click", function () {
+        const code = document.getElementById("getListCodeOutput").textContent;
+        navigator.clipboard
+          .writeText(code)
+          .then(() => {
+            alert("PHP code copied to clipboard!");
+          })
+          .catch((err) => {
+            alert("Failed to copy text: " + err);
+          });
+      });
+
+    document
+      .getElementById("copyInsertcode")
+      .addEventListener("click", function () {
+        const code = document.getElementById("insertCodeOutput").textContent;
+        navigator.clipboard
+          .writeText(code)
+          .then(() => {
+            alert("PHP code copied to clipboard!");
+          })
+          .catch((err) => {
+            alert("Failed to copy text: " + err);
+          });
+      });
+
+
+    document
+      .getElementById("copyDeletecode")
+      .addEventListener("click", function () {
+        const code = document.getElementById("deleteCodeOutput").textContent;
+        navigator.clipboard
+          .writeText(code)
+          .then(() => {
+            alert("PHP code copied to clipboard!");
+          })
+          .catch((err) => {
+            alert("Failed to copy text: " + err);
+          });
+      });
+
+    document
+      .getElementById("copyUpdatecode")
+      .addEventListener("click", function () {
+        const code = document.getElementById("updateCodeOutput").textContent;
+        navigator.clipboard
+          .writeText(code)
+          .then(() => {
+            alert("PHP code copied to clipboard!");
+          })
+          .catch((err) => {
+            alert("Failed to copy text: " + err);
+          });
+      });
+
+
+    const phpCode = `<?php  
+$servername = "localhost";
+$username = "";
+$password = ""; // Use $password instead of $passworddb
+$dbname = ""; // Use $dbname instead of $databasename
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+
+// if ($conn->connect_error) {
+//     die("Connection failed: " . $conn->connect_error);
+// } else {
+//     echo "Connected successfully";
+// }
+?>`;
+    document.getElementById("dowenloadconnectionfile").addEventListener("click", function () {
+      // Create a blob with the PHP code
+      const blob = new Blob([phpCode], { type: "application/x-httpd-php" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "connection.php"; // File name for download
+      link.click();
+      URL.revokeObjectURL(link.href); // Clean up
     });
-
-  // Copy buttons handlers
-  document
-    .getElementById("copyGetListcode")
-    .addEventListener("click", function () {
-      const code = document.getElementById("getListCodeOutput").textContent;
-      navigator.clipboard
-        .writeText(code)
-        .then(() => {
-          alert("PHP code copied to clipboard!");
-        })
-        .catch((err) => {
-          alert("Failed to copy text: " + err);
-        });
-    });
-
-  document
-    .getElementById("copyInsertcode")
-    .addEventListener("click", function () {
-      const code = document.getElementById("insertCodeOutput").textContent;
-      navigator.clipboard
-        .writeText(code)
-        .then(() => {
-          alert("PHP code copied to clipboard!");
-        })
-        .catch((err) => {
-          alert("Failed to copy text: " + err);
-        });
-    });
-
-    
-  document
-    .getElementById("copyDeletecode")
-    .addEventListener("click", function () {
-      const code = document.getElementById("deleteCodeOutput").textContent;
-      navigator.clipboard
-        .writeText(code)
-        .then(() => {
-          alert("PHP code copied to clipboard!");
-        })
-        .catch((err) => {
-          alert("Failed to copy text: " + err);
-        });
-    });
-
-      document
-    .getElementById("copyUpdatecode")
-    .addEventListener("click", function () {
-      const code = document.getElementById("updateCodeOutput").textContent;
-      navigator.clipboard
-        .writeText(code)
-        .then(() => {
-          alert("PHP code copied to clipboard!");
-        })
-        .catch((err) => {
-          alert("Failed to copy text: " + err);
-        });
-    });
-
-</script>
+  </script>
 
 </body>
 
