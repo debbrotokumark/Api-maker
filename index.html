@@ -237,7 +237,7 @@
 $key = $_POST['key'];
 
 if ($key == "${key}") {
-    require '../connection.php';
+    require 'connection.php';
 
     // SQL query to fetch all rows
     \$fetchall = "SELECT ${columnsForSelect} FROM ${tableName}";
@@ -278,7 +278,7 @@ echo json_encode(\$response);
 \$key = \$_POST['key'];
 
 if (\$key == "${key}") {
-    require '../connection.php';
+    require 'connection.php';
 
     // Retrieve data from POST request
     ${columns.map((col) => `$${col} = $_POST['${col}'] ?? '';`).join("\n    ")}
@@ -332,7 +332,7 @@ echo json_encode(\$response);
 \$key = \$_POST['key'];
 
 if (\$key == "${key}") {
-    require '../connection.php';
+    require 'connection.php';
 
     // Retrieve data from POST request
     \$id = \$_POST['id'] ?? '';
@@ -389,7 +389,7 @@ echo json_encode(\$response);
 $key = $_POST['key'];
 
 if ($key === "${key}") {
-    require '../connection.php';
+    require 'connection.php';
 
     // Get the ID from POST
     $id = $_POST['id'] ?? '';
